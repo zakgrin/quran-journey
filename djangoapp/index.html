@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متصفح المصحف الشريف</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Naskh Arabic', serif;
+            direction: rtl;
+        }
+
+        .surah-item {
+            transition: background-color 0.3s ease;
+        }
+
+        .surah-item:hover {
+            background-color: #f5f5f4;
+            /* stone-200 */
+        }
+    </style>
+</head>
+
+<body class="bg-stone-100 text-stone-800">
+    <header class="text-center mb-8 pt-8 pb-4 bg-emerald-700 text-white shadow-md">
+        <h1 class="text-5xl md:text-6xl font-extrabold mb-2">المصحف الشريف</h1>
+        <p class="text-xl md:text-2xl">تصفح القرآن الكريم بأسلوب تفاعلي</p>
+    </header>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl mt-8">
+        <section class="mb-8 p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold text-emerald-700 mb-3 text-center">اختر السورة لبدء رحلتك</h2>
+            <p class="mb-4 leading-relaxed text-center text-stone-600">اضغط على اسم السورة لعرض آياتها وتفسيرها الميسر
+                بأسلوب البطاقات التفاعلية.</p>
+        </section>
+
+        <section>
+            <div id="surahList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const surahsData = [
+            { id: 1, name: "الفاتحة", arabicName: "الفاتحة", type: "مكية", ayahs: 7 },
+            { id: 2, name: "البقرة", arabicName: "البقرة", type: "مدنية", ayahs: 286 },
+            { id: 3, name: "آل عمران", arabicName: "آل عمران", type: "مدنية", ayahs: 200 },
+            { id: 4, name: "النساء", arabicName: "النساء", type: "مدنية", ayahs: 176 },
+            { id: 5, name: "المائدة", arabicName: "المائدة", type: "مدنية", ayahs: 120 },
+            { id: 6, name: "الأنعام", arabicName: "الأنعام", type: "مكية", ayahs: 165 },
+            { id: 7, name: "الأعراف", arabicName: "الأعراف", type: "مكية", ayahs: 206 },
+            { id: 8, name: "الأنفال", arabicName: "الأنفال", type: "مدنية", ayahs: 75 },
+            { id: 9, name: "التوبة", arabicName: "التوبة", type: "مدنية", ayahs: 129 },
+            { id: 10, name: "يونس", arabicName: "يونس", type: "مكية", ayahs: 109 },
+            { id: 11, name: "هود", arabicName: "هود", type: "مكية", ayahs: 123 },
+            { id: 12, name: "يوسف", arabicName: "يوسف", type: "مكية", ayahs: 111 },
+            { id: 13, name: "الرعد", arabicName: "الرعد", type: "مدنية", ayahs: 43 },
+            { id: 14, name: "إبراهيم", arabicName: "إبراهيم", type: "مكية", ayahs: 52 },
+            { id: 15, name: "الحجر", arabicName: "الحجر", type: "مكية", ayahs: 99 },
+            { id: 16, name: "النحل", arabicName: "النحل", type: "مكية", ayahs: 128 },
+            { id: 17, name: "الإسراء", arabicName: "الإسراء", type: "مكية", ayahs: 111 },
+            { id: 18, name: "الكهف", arabicName: "الكهف", type: "مكية", ayahs: 110 },
+            { id: 19, name: "مريم", arabicName: "مريم", type: "مكية", ayahs: 98 },
+            { id: 20, name: "طه", arabicName: "طه", type: "مكية", ayahs: 135 },
+            { id: 21, name: "الأنبياء", arabicName: "الأنبياء", type: "مكية", ayahs: 112 },
+            { id: 22, name: "الحج", arabicName: "الحج", type: "مدنية", ayahs: 78 },
+            { id: 23, name: "المؤمنون", arabicName: "المؤمنون", type: "مكية", ayahs: 118 },
+            { id: 24, name: "النور", arabicName: "النور", type: "مدنية", ayahs: 64 },
+            { id: 25, name: "الفرقان", arabicName: "الفرقان", type: "مكية", ayahs: 77 },
+            { id: 26, name: "الشعراء", arabicName: "الشعراء", type: "مكية", ayahs: 227 },
+            { id: 27, name: "النمل", arabicName: "النمل", type: "مكية", ayahs: 93 },
+            { id: 28, name: "القصص", arabicName: "القصص", type: "مكية", ayahs: 88 },
+            { id: 29, name: "العنكبوت", arabicName: "العنكبوت", type: "مكية", ayahs: 69 },
+            { id: 30, name: "الروم", arabicName: "الروم", type: "مكية", ayahs: 60 },
+            { id: 31, name: "لقمان", arabicName: "لقمان", type: "مكية", ayahs: 34 },
+            { id: 32, name: "السجدة", arabicName: "السجدة", type: "مكية", ayahs: 30 },
+            { id: 33, name: "الأحزاب", arabicName: "الأحزاب", type: "مدنية", ayahs: 73 },
+            { id: 34, name: "سبأ", arabicName: "سبأ", type: "مكية", ayahs: 54 },
+            { id: 35, name: "فاطر", arabicName: "فاطر", type: "مكية", ayahs: 45 },
+            { id: 36, name: "يس", arabicName: "يس", type: "مكية", ayahs: 83 },
+            { id: 37, name: "الصافات", arabicName: "الصافات", type: "مكية", ayahs: 182 },
+            { id: 38, name: "ص", arabicName: "ص", type: "مكية", ayahs: 88 },
+            { id: 39, name: "الزمر", arabicName: "الزمر", type: "مكية", ayahs: 75 },
+            { id: 40, name: "غافر", arabicName: "غافر", type: "مكية", ayahs: 85 },
+            { id: 41, name: "فصلت", arabicName: "فصلت", type: "مكية", ayahs: 54 },
+            { id: 42, name: "الشورى", arabicName: "الشورى", type: "مكية", ayahs: 53 },
+            { id: 43, name: "الزخرف", arabicName: "الزخرف", type: "مكية", ayahs: 89 },
+            { id: 44, name: "الدخان", arabicName: "الدخان", type: "مكية", ayahs: 59 },
+            { id: 45, name: "الجاثية", arabicName: "الجاثية", type: "مكية", ayahs: 37 },
+            { id: 46, name: "الأحقاف", arabicName: "الأحقاف", type: "مكية", ayahs: 35 },
+            { id: 47, name: "محمد", arabicName: "محمد", type: "مدنية", ayahs: 38 },
+            { id: 48, name: "الفتح", arabicName: "الفتح", type: "مدنية", ayahs: 29 },
+            { id: 49, name: "الحجرات", arabicName: "الحجرات", type: "مدنية", ayahs: 18 },
+            { id: 50, name: "ق", arabicName: "ق", type: "مكية", ayahs: 45 },
+            { id: 51, name: "الذاريات", arabicName: "الذاريات", type: "مكية", ayahs: 60 },
+            { id: 52, name: "الطور", arabicName: "الطور", type: "مكية", ayahs: 49 },
+            { id: 53, name: "النجم", arabicName: "النجم", type: "مكية", ayahs: 62 },
+            { id: 54, name: "القمر", arabicName: "القمر", type: "مكية", ayahs: 55 },
+            { id: 55, name: "الرحمن", arabicName: "الرحمن", type: "مدنية", ayahs: 78 },
+            { id: 56, name: "الواقعة", arabicName: "الواقعة", type: "مكية", ayahs: 96 },
+            { id: 57, name: "الحديد", arabicName: "الحديد", type: "مدنية", ayahs: 29 },
+            { id: 58, name: "المجادلة", arabicName: "المجادلة", type: "مدنية", ayahs: 22 },
+            { id: 59, name: "الحشر", arabicName: "الحشر", type: "مدنية", ayahs: 24 },
+            { id: 60, name: "الممتحنة", arabicName: "الممتحنة", type: "مدنية", ayahs: 13 },
+            { id: 61, name: "الصف", arabicName: "الصف", type: "مدنية", ayahs: 14 },
+            { id: 62, name: "الجمعة", arabicName: "الجمعة", type: "مدنية", ayahs: 11 },
+            { id: 63, name: "المنافقون", arabicName: "المنافقون", type: "مدنية", ayahs: 11 },
+            { id: 64, name: "التغابن", arabicName: "التغابن", type: "مدنية", ayahs: 18 },
+            { id: 65, name: "الطلاق", arabicName: "الطلاق", type: "مدنية", ayahs: 12 },
+            { id: 66, name: "التحريم", arabicName: "التحريم", type: "مدنية", ayahs: 12 },
+            { id: 67, name: "الملك", arabicName: "الملك", type: "مكية", ayahs: 30 },
+            { id: 68, name: "القلم", arabicName: "القلم", type: "مكية", ayahs: 52 },
+            { id: 69, name: "الحاقة", arabicName: "الحاقة", type: "مكية", ayahs: 52 },
+            { id: 70, name: "المعارج", arabicName: "المعارج", type: "مكية", ayahs: 44 },
+            { id: 71, name: "نوح", arabicName: "نوح", type: "مكية", ayahs: 28 },
+            { id: 72, name: "الجن", arabicName: "الجن", type: "مكية", ayahs: 28 },
+            { id: 73, name: "المزمل", arabicName: "المزمل", type: "مكية", ayahs: 20 },
+            { id: 74, name: "المدثر", arabicName: "المدثر", type: "مكية", ayahs: 56 },
+            { id: 75, name: "القيامة", arabicName: "القيامة", type: "مكية", ayahs: 40 },
+            { id: 76, name: "الإنسان", arabicName: "الإنسان", type: "مدنية", ayahs: 31 },
+            { id: 77, name: "المرسلات", arabicName: "المرسلات", type: "مكية", ayahs: 50 },
+            { id: 78, name: "النبأ", arabicName: "النبأ", type: "مكية", ayahs: 40 },
+            { id: 79, name: "النازعات", arabicName: "النازعات", type: "مكية", ayahs: 46 },
+            { id: 80, name: "عبس", arabicName: "عبس", type: "مكية", ayahs: 42 },
+            { id: 81, name: "التكوير", arabicName: "التكوير", type: "مكية", ayahs: 29 },
+            { id: 82, name: "الانفطار", arabicName: "الانفطار", type: "مكية", ayahs: 19 },
+            { id: 83, name: "المطففين", arabicName: "المطففين", type: "مكية", ayahs: 36 },
+            { id: 84, name: "الانشقاق", arabicName: "الانشقاق", type: "مكية", ayahs: 25 },
+            { id: 85, name: "البروج", arabicName: "البروج", type: "مكية", ayahs: 22 },
+            { id: 86, name: "الطارق", arabicName: "الطارق", type: "مكية", ayahs: 17 },
+            { id: 87, name: "الأعلى", arabicName: "الأعلى", type: "مكية", ayahs: 19 },
+            { id: 88, name: "الغاشية", arabicName: "الغاشية", type: "مكية", ayahs: 26 },
+            { id: 89, name: "الفجر", arabicName: "الفجر", type: "مكية", ayahs: 30 },
+            { id: 90, name: "البلد", arabicName: "البلد", type: "مكية", ayahs: 20 },
+            { id: 91, name: "الشمس", arabicName: "الشمس", type: "مكية", ayahs: 15 },
+            { id: 92, name: "الليل", arabicName: "الليل", type: "مكية", ayahs: 21 },
+            { id: 93, name: "الضحى", arabicName: "الضحى", type: "مكية", ayahs: 11 },
+            { id: 94, name: "الشرح", arabicName: "الشرح", type: "مكية", ayahs: 8 },
+            { id: 95, name: "التين", arabicName: "التين", type: "مكية", ayahs: 8 },
+            { id: 96, name: "العلق", arabicName: "العلق", type: "مكية", ayahs: 19 },
+            { id: 97, name: "القدر", arabicName: "القدر", type: "مكية", ayahs: 5 },
+            { id: 98, name: "البينة", arabicName: "البينة", type: "مدنية", ayahs: 8 },
+            { id: 99, name: "الزلزلة", arabicName: "الزلزلة", type: "مدنية", ayahs: 8 },
+            { id: 100, name: "العاديات", arabicName: "العاديات", type: "مكية", ayahs: 11 },
+            { id: 101, name: "القارعة", arabicName: "القارعة", type: "مكية", ayahs: 11 },
+            { id: 102, name: "التكاثر", arabicName: "التكاثر", type: "مكية", ayahs: 8 },
+            { id: 103, name: "العصر", arabicName: "العصر", type: "مكية", ayahs: 3 },
+            { id: 104, name: "الهمزة", arabicName: "الهمزة", type: "مكية", ayahs: 9 },
+            { id: 105, name: "الفيل", arabicName: "الفيل", type: "مكية", ayahs: 5 },
+            { id: 106, name: "قريش", arabicName: "قريش", type: "مكية", ayahs: 4 },
+            { id: 107, name: "الماعون", arabicName: "الماعون", type: "مكية", ayahs: 7 },
+            { id: 108, name: "الكوثر", arabicName: "الكوثر", type: "مكية", ayahs: 3 },
+            { id: 109, name: "الكافرون", arabicName: "الكافرون", type: "مكية", ayahs: 6 },
+            { id: 110, name: "النصر", arabicName: "النصر", type: "مدنية", ayahs: 3 },
+            { id: 111, name: "المسد", arabicName: "المسد", type: "مكية", ayahs: 5 },
+            { id: 112, name: "الإخلاص", arabicName: "الإخلاص", type: "مكية", ayahs: 4 },
+            { id: 113, name: "الفلق", arabicName: "الفلق", type: "مكية", ayahs: 5 },
+            { id: 114, name: "الناس", arabicName: "الناس", type: "مكية", ayahs: 6 }
+        ];
+
+        const surahListDiv = document.getElementById('surahList');
+
+        function renderSurahList() {
+            surahListDiv.innerHTML = '';
+            surahsData.forEach(surah => {
+                const surahItem = document.createElement('div');
+                surahItem.className = 'surah-item bg-white p-4 rounded-lg shadow-md cursor-pointer flex items-center justify-between';
+                surahItem.innerHTML = `
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <span class="text-2xl font-bold text-emerald-700">${surah.id}.</span>
+                        <span class="text-xl font-semibold text-stone-800">${surah.arabicName}</span>
+                    </div>
+                    <div class="text-sm text-stone-500">
+                        <span>${surah.type}</span>
+                        <span class="mx-1">•</span>
+                        <span>${surah.ayahs} آية</span>
+                    </div>
+                `;
+                surahItem.addEventListener('click', () => {
+                    // Navigate to surah.html, passing the surah ID as a query parameter
+                    window.location.href = `surah.html?surahId=${surah.id}`;
+                });
+                surahListDiv.appendChild(surahItem);
+            });
+        }
+
+        renderSurahList();
+    </script>
+</body>
+
+</html>

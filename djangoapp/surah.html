@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="surahTitle">سورة - متصفح المصحف</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Naskh Arabic', serif;
+            direction: rtl;
+        }
+
+        .ayah-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-height: 400px;
+            /* Adjust as needed */
+        }
+
+        .ayah-text {
+            font-size: 1.75rem;
+            /* text-3xl */
+            line-height: 2.25rem;
+            /* leading-relaxed */
+            margin-bottom: 1rem;
+            white-space: pre-line;
+            text-align: justify;
+        }
+
+        .ayah-explanation {
+            font-size: 1rem;
+            /* text-base */
+            color: #57534e;
+            /* stone-600 */
+            line-height: 1.75;
+            flex-grow: 1;
+            /* Allows explanation to take up available space */
+        }
+
+        /* Custom scrollbar for explanation */
+        .ayah-explanation-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .ayah-explanation-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .ayah-explanation-scroll::-webkit-scrollbar-thumb {
+            background: #a3a3a3;
+            /* stone-400 */
+            border-radius: 10px;
+        }
+
+        .ayah-explanation-scroll::-webkit-scrollbar-thumb:hover {
+            background: #78716c;
+            /* stone-500 */
+        }
+    </style>
+</head>
+
+<body class="bg-stone-100 text-stone-800">
+    <header class="text-center mb-8 pt-8 pb-4 bg-emerald-700 text-white shadow-md">
+        <h1 class="text-5xl md:text-6xl font-extrabold mb-2" id="surahHeaderName"></h1>
+        <p class="text-xl md:text-2xl" id="surahDetails"></p>
+        <button id="backToHome"
+            class="mt-4 bg-emerald-600 hover:bg-emerald-800 text-white font-semibold py-2 px-4 rounded-lg">العودة لقائمة
+            السور</button>
+    </header>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <section id="ayahDisplay"
+            class="mb-8 p-6 bg-white rounded-lg shadow-md flex flex-col justify-between items-center hidden">
+            <h3 class="text-2xl font-bold text-emerald-700 mb-4" id="ayahNumber"></h3>
+            <p class="ayah-text" id="ayahText"></p>
+            <div class="mt-4 pt-4 border-t border-stone-200 w-full flex-grow overflow-y-auto ayah-explanation-scroll">
+                <h4 class="text-xl font-semibold text-emerald-700 mb-2">التفسير الميسر:</h4>
+                <p class="ayah-explanation" id="ayahExplanation"></p>
+            </div>
+
+            <div class="mt-auto pt-4 border-t border-stone-200 flex justify-between items-center w-full">
+                <button id="prevAyahButton"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">الآية
+                    السابقة</button>
+                <span id="currentAyahInfo" class="text-sm text-stone-500"></span>
+                <button id="nextAyahButton"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">الآية
+                    التالية</button>
+            </div>
+        </section>
+
+        <section id="loadingMessage" class="text-center text-xl text-stone-600">
+            جاري تحميل آيات السورة...
+        </section>
+
+        <section id="errorMessage" class="text-center text-xl text-red-600 hidden">
+            عذراً، لم يتم العثور على بيانات لهذه السورة أو حدث خطأ.
+        </section>
+    </div>
+
+    <script>
+        // Dummy data for Surah Al-Fatiha with Taysir Explanation
+        // In a real application, you would load this from an API or separate JSON files.
+        const surahsData = [
+            // Only Fatiha for now. Add other surahs' full data here if small,
+            // or use a fetch API for larger ones.
+            {
+                id: 1,
+                name: "الفاتحة",
+                arabicName: "الفاتحة",
+                type: "مكية",
+                ayahs: 7,
+                verses: [
+                    {
+                        ayah: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                        taysir: "باسم الله أبدأ قراءة القرآن, مستعينًا به جل وعلا, فهو الرحمن الذي وسعت رحمته كل شيء, الرحيم بعباده المؤمنين."
+                    },
+                    {
+                        ayah: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+                        taysir: "الثناء الكامل لله وحده، رب جميع المخلوقات من الجن والإنس والملائكة وغيرهم."
+                    },
+                    {
+                        ayah: "الرَّحْمَٰنِ الرَّحِيمِ",
+                        taysir: "الذي وسعت رحمته كل شيء، وهو الرحيم بعباده المؤمنين، وذلك من فضله وكرمه."
+                    },
+                    {
+                        ayah: "مَالِكِ يَوْمِ الدِّينِ",
+                        taysir: "هو سبحانه المالك المتصرف في يوم الجزاء والحساب، ولا يشاركه أحد في ذلك."
+                    },
+                    {
+                        ayah: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+                        taysir: "نخصك وحدك بالعبادة والطاعة، ونستعين بك وحدك في جميع أمورنا."
+                    },
+                    {
+                        ayah: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+                        taysir: "ارشدنا يا ربنا ووفقنا إلى الطريق المستقيم، وهو دين الإسلام الذي لا اعوجاج فيه."
+                    },
+                    {
+                        ayah: "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+                        taysir: "طريق الأنبياء والصديقين والشهداء والصالحين الذين أنعمت عليهم بالإيمان والهداية، غير طريق اليهود والنصارى ومن شابههم من المغضوب عليهم أو الضالين."
+                    }
+                ]
+            },
+            // ... add more surahs here with their 'verses' array
+            // Example for Al-Ikhlas (if you want another small one)
+            {
+                id: 112,
+                name: "الإخلاص",
+                arabicName: "الإخلاص",
+                type: "مكية",
+                ayahs: 4,
+                verses: [
+                    { ayah: "قُلْ هُوَ اللَّهُ أَحَدٌ", taysir: "قل -أيها النبي- هو الله المتفرد بوحدانيته، لا شريك له ولا نظير." },
+                    { ayah: "اللَّهُ الصَّمَدُ", taysir: "هو السيد الذي يُقصد وحده في الحاجات، وهو الذي لا جوف له ولا يأكل ولا يشرب." },
+                    { ayah: "لَمْ يَلِدْ وَلَمْ يُولَدْ", taysir: "ليس له ولد، ولم يولد من أحد، فهو الأول الذي لا بداية له، والآخر الذي لا نهاية له." },
+                    { ayah: "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ", taysir: "ولم يكن له مثيل ولا شبيه، فهو لا يضاهيه أحد في صفاته وأسمائه وأفعاله." }
+                ]
+            }
+        ];
+
+        let currentSurahId = null;
+        let currentAyahIndex = 0;
+        let selectedSurahData = null;
+
+        const surahTitle = document.getElementById('surahTitle');
+        const surahHeaderName = document.getElementById('surahHeaderName');
+        const surahDetails = document.getElementById('surahDetails');
+        const ayahDisplay = document.getElementById('ayahDisplay');
+        const ayahNumberElem = document.getElementById('ayahNumber');
+        const ayahTextElem = document.getElementById('ayahText');
+        const ayahExplanationElem = document.getElementById('ayahExplanation');
+        const prevAyahButton = document.getElementById('prevAyahButton');
+        const nextAyahButton = document.getElementById('nextAyahButton');
+        const currentAyahInfo = document.getElementById('currentAyahInfo');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const backToHomeButton = document.getElementById('backToHome');
+
+        // Function to get query parameter
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        function loadSurah() {
+            currentSurahId = parseInt(getQueryParam('surahId'));
+
+            if (isNaN(currentSurahId)) {
+                loadingMessage.classList.add('hidden');
+                errorMessage.classList.remove('hidden');
+                errorMessage.textContent = 'خطأ: لم يتم تحديد السورة بشكل صحيح.';
+                return;
+            }
+
+            // In a real app, you'd fetch data here
+            // Example: fetch(`/api/surahs/${currentSurahId}.json`)
+            selectedSurahData = surahsData.find(s => s.id === currentSurahId);
+
+            if (selectedSurahData && selectedSurahData.verses) {
+                surahTitle.textContent = selectedSurahData.arabicName + " - متصفح المصحف";
+                surahHeaderName.textContent = selectedSurahData.arabicName;
+                surahDetails.textContent = `${selectedSurahData.type} - ${selectedSurahData.ayahs} آية`;
+
+                loadingMessage.classList.add('hidden');
+                ayahDisplay.classList.remove('hidden');
+                displayAyah(0); // Display the first ayah
+            } else {
+                loadingMessage.classList.add('hidden');
+                errorMessage.classList.remove('hidden');
+                errorMessage.textContent = `عذراً، لم يتم العثور على بيانات للسورة رقم ${currentSurahId} أو أن بياناتها غير كاملة.`;
+            }
+        }
+
+        function displayAyah(index) {
+            if (!selectedSurahData || !selectedSurahData.verses || index < 0 || index >= selectedSurahData.verses.length) {
+                return;
+            }
+            currentAyahIndex = index;
+            const ayah = selectedSurahData.verses[currentAyahIndex];
+
+            ayahNumberElem.textContent = `الآية ${currentAyahIndex + 1}`;
+            ayahTextElem.textContent = ayah.ayah;
+            ayahExplanationElem.textContent = ayah.taysir || 'لا يوجد تفسير ميسر لهذه الآية بعد.';
+            currentAyahInfo.textContent = `الآية ${currentAyahIndex + 1} من ${selectedSurahData.ayahs}`;
+
+            prevAyahButton.disabled = currentAyahIndex === 0;
+            nextAyahButton.disabled = currentAyahIndex === selectedSurahData.verses.length - 1;
+
+            // Scroll explanation to top on new ayah
+            ayahExplanationElem.parentNode.scrollTop = 0;
+        }
+
+        prevAyahButton.addEventListener('click', () => {
+            if (currentAyahIndex > 0) {
+                displayAyah(currentAyahIndex - 1);
+            }
+        });
+
+        nextAyahButton.addEventListener('click', () => {
+            if (currentAyahIndex < selectedSurahData.verses.length - 1) {
+                displayAyah(currentAyahIndex + 1);
+            }
+        });
+
+        backToHomeButton.addEventListener('click', () => {
+            window.location.href = 'index.html'; // Go back to the main surah list
+        });
+
+        // Load surah when the page loads
+        document.addEventListener('DOMContentLoaded', loadSurah);
+
+        // Keyboard navigation for Ayahs
+        document.addEventListener('keydown', (event) => {
+            if (selectedSurahData) {
+                if (event.key === 'ArrowRight' && !nextAyahButton.disabled) { // ArrowRight for RTL next
+                    nextAyahButton.click();
+                } else if (event.key === 'ArrowLeft' && !prevAyahButton.disabled) { // ArrowLeft for RTL previous
+                    prevAyahButton.click();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
