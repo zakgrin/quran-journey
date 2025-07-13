@@ -1,4 +1,4 @@
-name: Build Documentation
+name: Build Website
 
 # Controls when the workflow will run
 on: 
@@ -29,7 +29,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-
       - name: Run ghp-import
         run: |
-          ghp-import -n -p -f quran
+          ghp-import -n -p -f -b gh-pages quran
