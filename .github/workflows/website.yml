@@ -29,6 +29,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      - name: Build HTML
+        run: | 
+          cd quran/
+
       - name: Run ghp-import
         run: |
           ghp-import -n -p -f quran
