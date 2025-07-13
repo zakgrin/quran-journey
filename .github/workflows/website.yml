@@ -31,4 +31,4 @@ jobs:
 
       - name: Run ghp-import
         run: |
-          ghp-import -n -p -f -b gh-pages quran
+          ghp-import -n -p -f quran
