@@ -1,6 +1,6 @@
-# quran-journey
+# Rihla (journey)
 
-Journey Method to Memorize Quran
+Journey Method to Memorize Quran, Sunah, and more.
 
 ## License
 
