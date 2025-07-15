@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رحلة سورة الحاقة التفاعلية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Naskh Arabic', serif;
+            direction: rtl;
+        }
+
+        .station-item {
+            transition: background-color 0.3s ease;
+        }
+
+        .station-item:hover {
+            background-color: #f5f5f4;
+            /* stone-200 */
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 50px;
+            max-height: 50px;
+        }
+
+        .thumn-highlight {
+            border-right: 8px solid #065f46;
+            /* emerald-800 for the bar */
+            padding-right: 12px;
+            /* Add some padding to separate content from the bar */
+            position: relative;
+        }
+
+        .thumn-highlight::before {
+            content: "ثمن";
+            position: absolute;
+            right: -8px;
+            /* Position it on the border */
+            top: 50%;
+            transform: translateY(-50%) rotate(90deg);
+            /* Rotate to be vertical */
+            background-color: #065f46;
+            /* Same as border for consistency */
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 4px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        /* Custom scrollbar for modal content if needed */
+        .modal-scrollable-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-scrollable-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .modal-scrollable-content::-webkit-scrollbar-thumb {
+            background: #a3a3a3;
+            /* stone-400 */
+            border-radius: 10px;
+        }
+
+        .modal-scrollable-content::-webkit-scrollbar-thumb:hover {
+            background: #78716c;
+            /* stone-500 */
+        }
+    </style>
+</head>
+
+<body class="bg-stone-100 text-stone-800">
+    <header class="text-center mb-8 pt-4">
+        <a href="../../index.html"
+            class="absolute top-4 right-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md text-sm md:text-base">
+            العودة للصفحة الرئيسية
+        </a>
+        <h0 class="text-6xl md:text-7xl font-extrabold text-emerald-800 mb-4">الحاقة</h0>
+        <h1 class="text-4xl md:text-5xl font-bold text-emerald-700 mb-2">رحلة سورة الحاقة التفاعلية</h1>
+        <p class="text-lg text-emerald-600">برواية قالون - باستخدام طريقة الرحلة</p>
+    </header>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <section class="mb-8 p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold text-emerald-700 mb-3">مقدمة عن طريقة الرحلة</h2>
+            <p class="mb-2 leading-relaxed">تعتمد طريقة الرحلة (أو قصر الذاكرة) على ربط المعلومات التي ترغب في حفظها
+                بمواقع محددة في رحلة ذهنية مألوفة. في هذا التطبيق، ستسافر عبر "أراضي الحاقة" الخيالية، حيث تمثل كل محطة
+                من محطاتها الاثنتين والخمسين آية من آيات سورة الحاقة.</p>
+            <p class="leading-relaxed">عند كل محطة، ستجد الآية الكريمة وتصوراً بصرياً مقترحاً لمساعدتك على ترسيخها في
+                ذهنك. نأمل أن تكون هذه الرحلة ممتعة ومفيدة لك في حفظ وتدبر سورة الحاقة.</p>
+        </section>
+
+        <section id="progressSection" class="my-8">
+            <h2 class="text-2xl font-semibold text-emerald-700 mb-3 text-center">مستوى التقدم في الرحلة:</h2>
+            <div class="chart-container mb-6 bg-white p-2 rounded-lg shadow">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-semibold text-emerald-700 mb-4 text-center">محطات الرحلة</h2>
+            <div id="stationsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </div>
+        </section>
+
+        <div id="stationModal"
+            class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50 transition-opacity duration-300 ease-in-out">
+            <div class="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalStationName" class="text-2xl font-bold text-emerald-700"></h3>
+                    <button id="closeModalButton"
+                        class="text-stone-500 hover:text-stone-700 text-3xl leading-none">&times;</button>
+                </div>
+
+                <div class="overflow-y-auto pr-2 flex-grow modal-scrollable-content">
+                    <p id="modalStationAyah"
+                        class="text-xl md:text-2xl leading-relaxed md:leading-loose mb-4 whitespace-pre-line text-justify">
+                    </p>
+                    <p id="modalStationCue" class="text-stone-600 text-base leading-relaxed mb-6"></p>
+                    <img id="modalStationImage" class="w-24 h-24 rounded-full object-cover mx-auto mb-4"
+                        alt="صورة المحطة" onerror="this.style.display='none'">
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-stone-200 flex justify-between items-center">
+                    <button id="prevStationButton"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">السابقة</button>
+                    <span id="modalStationNumber" class="text-sm text-stone-500"></span>
+                    <button id="nextStationButton"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">التالية</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const stationsData = [
+            { id: 1, thumn: true, name: "جسر الوادي", emoji: "🌉", ayah: "الْحَاقَّةُ مَا الْحَاقَّةُ", cue: "تدخل إلى وادي عميق وغامض على جسر خشبي، تتأمل في كلمة 'الحاقة' وكأنها نداء يحمل معنى الحق والثبوت.", imageUrl: "images/001.png" },
+            { id: 2, name: "نفق الإدراك", emoji: "💡", ayah: "وَمَا أَدْرَاكَ مَا الْحَاقَّةُ", cue: "تصل إلى نهاية الجسر فتجد نفق يبدأ بالإنارة تدريجياً. تشعر بأنك بدأت تدرك شيئاً فشيئاً عظمة الأمر، ولكن لا تزال هناك جوانب غامضة. 'وما أدراك ما الحاقة؟' يتردد في ذهنك مؤكداً أن إدراكك ما زال محدوداً.", imageUrl: "images/002.jpg" },
+            { id: 3, name: "المدينة المدمرة", emoji: "🏛️", ayah: "كَذَّبَتْ ثَمُودُ وَعَادٌ بِالْقَارِعَةِ", cue: "تتابع سيرك من النفق وتصل إلى مدينة أثرية مدمرة بالكامل، تشعر وكأنها مدينة ثمود وعاد. تتخيل بقايا مساكنهم، وتتذكر تكذيبهم بالواقعة وهي الساعة التي تقرع القلوب.", imageUrl: "images/003.jpg" },
+            { id: 4, name: "غرفة المحنطون", emoji: "🗽", ayah: "فَأَمَّا ثَمُودُ فَأُهْلِكُوا بِالطَّاغِيَةِ", cue: "بعد رؤية المدينة المدمرة تذهب على اليسار فتجد غرفة المحنطون. وتتذكر كيف أهلكت ثمود بصيحة الطاغية الذي طغت عليهم.", imageUrl: "images/004.jpg" },
+            { id: 5, name: "العاصفة الصحراوية", emoji: "🌪️", ayah: "وَأَمَّا عَادٌ فَأُهْلِكُوا بِرِيحٍ صَرْصَرٍ عَاتِيَةٍ", cue: "تترك الغرفة وتدخل منطقة صحراوية عاصفة. تتخيل كيف أهلكت عاد بهذه الريح الشديدة التي دمرت كل شيء.", imageUrl: "images/005.jpg" },
+            { id: 6, name: "مرتفع النخيل", emoji: "🌴⛰️", ayah: "سَخَّرَهَا عَلَيْهِمْ سَبْعَ لَيَالٍ وَثَمَانِيَةَ أَيَّامٍ حُسُومًا فَتَرَى الْقَوْمَ فِيهَا صَرْعَىٰ كَأَنَّهُمْ أَعْجَازُ نَخْلٍ خَاوِيَةٍ", cue: "تصعد مرتفعًا ملئ بالنخيل، وترى الرياح من أعلى وكأنها استمرت سبع ليال وثمانية أيام متواصلة. تنظر للأسفل وترى أشجار نخيل ساقطة، وكأنهم القوم صرعى كأنهم أعجاز نخل خاوية.", imageUrl: "images/006.jpg" },
+            { id: 7, name: "معرض الموتى", emoji: "👻", ayah: "فَهَلْ تَرَىٰ لَهُم مِّن بَاقِيَةٍ", cue: "بعد النزول من المرتفع، تصل إلى معرض مهجور. لا يوجد فيه سوى صور لأناس اختفوا تمامًا، وكأنك تسأل: 'فهل ترى لهم من باقية؟' في إشارة إلى فناء الظالمين.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=باقية" },
+            { id: 8, name: "الأهرامات", emoji: "🔼", ayah: "وَجَاءَ فِرْعَوْنُ وَمَن قَبْلَهُ وَالْمُؤْتَفِكَاتُ بِالْخَاطِئَةِ", cue: "تتابع سيرك فتجد الأهرامات. تشعر بوجود فرعون ومن قبله من الطغاة، وتتخيل قصص المؤتفكات (القرى التي انقلبت) وكيف جاءوا بالخاطئة من الذنوب.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=فرعون" },
+            { id: 9, name: "ممر العصيان", emoji: "⚖️🏛️", ayah: "فَعَصَوْا رَسُولَ رَبِّهِمْ فَأَخَذَهُمْ أَخْذَةً رَّابِيَةً", cue: "تصل إلى ممر وسط البحر وتتخيل كيف أغرقوا لما عصوا رسول ربهم، فكانت النتيجة أخذة رابية شديدة، زادت عن المعتاد.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=عصيان" },
+            { id: 10, name: "أمواج البحر", emoji: "🌊", ayah: "إِنَّا لَمَّا طَغَى الْمَاءُ حَمَلْنَاكُمْ فِي الْجَارِيَةِ", cue: "بعد ممر البحر تجد نفسك في البحر وتتخيل قصة الطوفان العظيم، وكيف أن الله حملكم في الجارية (السفينة) عندما طغى الماء.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=طوفان" },
+            { id: 11, name: "لوحة التذكرة", emoji: "📜", ayah: "لِنَجْعَلَهَا لَكُمْ تَذْكِرَةً وَتَعِيَهَا أُذُنٌ وَاعِيَةٌ", cue: "تصل إلى الشاطئ وترى لوحًا منقوشًا عليه قصص النجاة، وكأنها تذكرة لتعيها أذن واعية. تشعر بأهمية الحفظ والوعي.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=ذكرى" },
+            { id: 12, name: "ساحة النفخ", emoji: "🎺", ayah: "فَإِذَا نُفِخَ فِي الصُّورِ نَفْخَةٌ وَاحِدَةٌ", cue: "تترك لوحة التذكرة وتصل إلى ساحة فسيحة. تسمع صوت بوق هائل يملأ المكان، وكأنها النفخة الأولى في الصور، تثير فيك الرهبة والاستعداد.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=صور" },
+            { id: 13, name: "بوابة الدك", emoji: "⛰️💥", ayah: "وَحُمِلَتِ الْأَرْضُ وَالْجِبَالُ فَدُكَّتَا دَكَّةً وَاحِدَةً", cue: "بعد صوت الصور، تتقدم نحو بوابة ضخمة وترى الأرض والجبال حملت ثم دكتا. تشعر بقوة الحدث الهائل.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=جبال" },
+            { id: 14, name: "سهل النزول", emoji: "🫨", ayah: "فَيَوْمَئِذٍ وَقَعَتِ الْوَاقِعَةُ", cue: "بعد بوابة الدك تقفز فتسقط في السهل المائل إلى الأسفل. هذا المشهد يذكرك بيوم القيامة حين 'وقعت الواقعة'.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=انشقاق" },
+            { id: 15, name: "سماء التشقق", emoji: "☁️", ayah: "وَانشَقَّتِ السَّمَاءُ فَهِيَ يَوْمَئِذٍ وَاهِيَةٌ", cue: "تخرج من السهل وتنظر فترى السماء أمامك تنقسم نصفين وتصبح 'واهية' فتسرع حتى تصل إلى الطر الآخر.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=سماء" },
+            { id: 16, name: "أرض الملائكة", emoji: "👼", ayah: "وَالْمَلَكُ عَلَىٰ أَرْجَائِهَا ۚ وَيَحْمِلُ عَرْشَ رَبِّكَ فَوْقَهُمْ يَوْمَئِذٍ ثَمَانِيَةٌ", cue: "بعد مشاهدة السماء، تهبط إلى أرض يعلوها الملائكة على أطرافها. ترى ثمانية من الملائكة العظام يحملون عرش ربك فوق رؤوسهم. تشعر بالهيبة والجلال.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=ملائكة" },
+            { id: 17, name: "جهاز العرض", emoji: "🩻", ayah: "يَوْمَئِذٍ تُعْرَضُونَ لَا تَخْفَىٰ مِنكُمْ خَافِيَةٌ", cue: "تصل إلى جهاز عرض ضخم لا حدود لها. تشعر بأنك وكل البشر تُعرضون، ولا تخفى منكم خافية. كل سر وكل فعل مكشوف.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=عرض" },
+            { id: 18, name: "قاعة اليمين", emoji: "📖 🫱", ayah: "فَأَمَّا مَنْ أُوتِيَ كِتَابَهُ بِيَمِينِهِ فَيَقُولُ هَاؤُمُ اقْرَءُوا كِتَابِيَهْ", cue: "بعد جهاز العرض، تذهب يمينا فترى أناسًا يسلمون كتبهم بأيديهم اليمنى، فيفرحون ويقولون: 'هاؤم اقرءوا كتابيهْ'. تشعر بالبهجة والاطمئنان.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=يمين" },
+            { id: 19, name: "الشاشة الخضراء", emoji: "🌳🎉", ayah: "إِنِّي ظَنَنتُ أَنِّي مُلَاقٍ حِسَابِيَهْ", cue: "وبعد أن تسلم كتابك تجد شاشة في قاعة أصحاب اليمين مليئة بالحسابات والأرقام الخضراء. ترى أصحاب اليمين يقولون في سعادة: 'إني ظننت أني ملاقٍ حسابيهْ'. تشعر براحة البال والنجاة.", imageUrl: "https://placehold.co/101x101/A7F3D0/065F46?text=جنة_يسير" },
+            { id: 20, name: "مزرعة الرضى", emoji: "😊🐄", ayah: "فَهُوَ فِي عِيشَةٍ رَّاضِيَةٍ", cue: "تتابع سيرك وتدخل الجنة، وتجد نفسك في مكان يملؤه الحيوانات الراضية. تشعر أن أصحاب الجنة 'في عيشة راضية' بكل تفاصيلها.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=عيشة" },
+            { id: 21, name: "الحدائق المعلقة", emoji: "⬆️🌺", ayah: "فِي جَنَّةٍ عَالِيَةٍ", cue: "بعد مزرعة الرضى تنظر إلى الأعلى في الجنة. ترى حدائق مرتفعة، 'في جنة عالية'، مما يوحي بسمو المنزلة والنعيم.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=عالية" },
+            { id: 22, name: "القطاف الداني", emoji: "🍇👇", ayah: "قُطُوفُهَا دَانِيَةٌ", cue: "في نهاية الجنة العالية، تدنو الأغصان لدرجة أن قطافها سهل وميسر، 'قطوفها دانية'. تشعر بجمال وسهولة الوصول للثمار.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=قطوف" },
+            { id: 23, name: "مائدة الهناء", emoji: "🍽️", ayah: "كُلُوا وَاشْرَبُوا هَنِيئًا بِمَا أَسْلَفْتُمْ فِي الْأَيَّامِ الْخَالِيَةِ", cue: "بعد قطاف الفاكهة، تدخل قاعة طعام فاخرة. ترى مائدة عامرة بأطيب الأطعمة والأشربة. تسمع ترحيبًا حارًا: 'كلوا واشربوا هنيئًا بما أسلفتم في الأيام الخالية'.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=هنيئا" },
+            { id: 24, name: "قاعة الشمال", emoji: "📖 🫲", ayah: "وَأَمَّا مَنْ أُوتِيَ كِتَابَهُ بِشِمَالِهِ", cue: "وتجد أناسا بعد جهاز العرض يذهبون يسارا ويستلمون كتبهم بشمالهم وهم في حزن فتشعر بالأسف والحسرة.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=شمال" },
+            { id: 25, name: "صرخة الصدمة", emoji: "🫨", ayah: "فَيَقُولُ يَا لَيْتَنِي لَمْ أُوتَ كِتَابِيَهْ", cue: "وبعد إستلام كتبهم ترى أناسًا يصرخون: 'يا ليتني لم أوت كتابيهْ' ندما على ما قدموا.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=شمال" },
+            { id: 26, name: "الشاشة الحمراء", emoji: "😔", ayah: "وَلَمْ أَدْرِ مَا حِسَابِيَهْ", cue: "وبعد صرخة الصدمة، تنظر فتجد شاشة حسابات كلها حمراء ويتمنون لو أنهم لم يعرفوا حسابهم: 'ولم أدر ما حسابيهْ'. الندم على المعرفة المؤلمة.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=تمني" },
+            { id: 27, name: "اللكمة القاضية", emoji: "🥊", ayah: "يَا لَيْتَهَا كَانَتِ الْقَاضِيَةَ", cue: "تتقدم وفجأة تأخذ لكمة قوية وتقول 'يا ليتها كانت القاضية'. اليأس من الحياة الدنيا.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=موت" },
+            { id: 28, name: "أخذ المال", emoji: "💰", ayah: "مَا أَغْنَىٰ عَنِّي مَالِيَهْ", cue: "بعد اللكمة، تدخل ساحة فارغة من أي قيمة ويقال لك أخر المال من جيبك وترى أناسًا ويقولون: 'ما أغنى عني ماليهْ'. تدرك أن المال لا ينفع هنا.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=لا_مال" },
+            { id: 29, name: "خلع المعطف", emoji: "🚫👑", ayah: "هَلَكَ عَنِّي سُلْطَانِيَهْ", cue: "بعد أخذ المال، تسير في ممر فيقال لك أخلع معطف السلطان فتشعر بأن كل سلطان وقوة قد زالت: 'هلك عني سلطانيهْ'. لا نفع للقوة هنا.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=لا_سلطان" },
+            { id: 30, name: "خزنة الجحيم", emoji: "⛓️🔥", ayah: "خُذُوهُ فَغُلُّوهُ", cue: "تخرج من الممر إلى بوابة جهنم. ترى ملائكة العذاب يأمرون: 'خذوه فغلوه'. تشعر بالقبضة الحديدية التي تسوق العصاة.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=خذوه" },
+            { id: 31, name: "بحيرة الجحيم", emoji: "🕳️🏴", ayah: "ثُمَّ الْجَحِيمَ صَلُّوهُ", cue: "بعد البوابة، ترى بحيرة حمم فتقذف فيها وتسمع صراخ أصحاب الجحيم. 'ثم الجحيم صلوه' أمر بإدخالهم النار.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=سلسلة" },
+            { id: 32, name: "ممر السلسلة", emoji: "🔗7️⃣0️⃣", ayah: "ثُمَّ فِي سِلْسِلَةٍ ذَرْعُهَا سَبْعُونَ ذِرَاعًا فَاسْلُكُوهُ", cue: "تخرج من بحيرة الجحيم، فتجد ممر به السلاسل بطول سبعين ذراعًا، ويتم إدخال العصاة فيها. 'ثم في سلسلة ذرعها سبعون ذراعًا فاسلكوه'.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=سلسلة_واد" },
+            { id: 33, name: "صفعة الكفر", emoji: "🚫🙏", ayah: "إِنَّهُ كَانَ لَا يُؤْمِنُ بِاللَّهِ الْعَظِيمِ", cue: "بعد ممر السلاسل، تدخل غرفة وتأخذ صفعة على القفى. تدرك أن سبب هذا العذاب هو 'إنه كان لا يؤمن بالله العظيم'.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=لا_إيمان" },
+            { id: 34, name: "جلدة البخل", emoji: "🚫🍽️", ayah: "وَلَا يَحُضُّ عَلَىٰ طَعَامِ الْمِسْكِينِ", cue: "وبعد الصفعة تجلد جلدة فتدرك أن هذا هو عقاب من لا يحض على طعام المسكين", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=لا_طعام" },
+            { id: 35, name: "رداء النار", emoji: "💔", ayah: "فَلَيْسَ لَهُ الْيَوْمَ هَاهُنَا حَمِيمٌ", cue: "بعد الجلدة تصل إلى مكان موحش لا ترى أي صديق أو قريب وتلبس رداء من نار، 'فليس له اليوم هاهنا حميم' يدافع عنه.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=لا_حميم" },
+            { id: 36, name: "صحن الطعام", emoji: "🤮", ayah: "وَلَا طَعَامٌ إِلَّا مِنْ غِسْلِينٍ", cue: "بعد مكان رداء النار، تأخذ صحن ويملى لك فيه سائل كريه الرائحة شديد الحرارة. تدرك أنه لا طعام لهم هنا إلا 'من غسلين' (صديد أهل النار).", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=غسلين" },
+            { id: 37, name: "مائدة الخطائين", emoji: "🚫", ayah: "لَّا يَأْكُلُهُ إِلَّا الْخَاطِئُونَ", cue: "تذهب بصحنك وتصل إلى مائدة نتنة وترى أناسًا يأكلون هذا الغسلين، تدرك أن 'لا يأكله إلا الخاطئون' الذين تجاوزوا حدود الله.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=خاطئون" },
+            { id: 38, thumn: true, name: "كرة شفافة", emoji: "⛰️", ayah: "فَلَا أُقْسِمُ بِمَا تُبْصِرُونَ", cue: "تخرج من مائدة الخطائين إلى ساحة عظيمة فترى كرة عملاقة شفافة ويتردد في ذهنك: 'فلا أقسم بما تبصرون' من عظمة الله.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=تبصرون" },
+            { id: 39, name: "كرة سوداء", emoji: "🌌", ayah: "وَمَا لَا تُبْصِرُونَ", cue: "بعد الكرة الشفافة، ترى كرة أخرى سوداء وتتخيل ما لا تدركه عيناك من عظمة الكون، 'وما لا تبصرون'.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=لا_تبصرون" },
+            { id: 40, name: "منبر الرسول", emoji: "🗣️⚖️", ayah: "إِنَّهُ لَقَوْلُ رَسُولٍ كَرِيمٍ", cue: "تتابع سيرك في الطريق فتسمع خطبة الرسول على يمينك وتدرك أن هذا 'لقول رسول كريم' لا يأتيه الباطل من بين يديه ولا من خلفه.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=قول_رسول" },
+            { id: 41, name: "دعوة الشاعر", emoji: "🚫📝", ayah: "وَمَا هُوَ بِقَوْلِ شَاعِرٍ ۚ قَلِيلًا مَّا تُؤْمِنُونَ", cue: "بعد سماع خطبة الرسول تصل إلى ميدان يقف فيه شاعر على يسارك فتشعر أن هذا القول ليس بحق.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=لا_شاعر" },
+            { id: 42, name: "دعوة الكاهن", emoji: "🚫🔮", ayah: "وَلَا بِقَوْلِ كَاهِنٍ ۚ قَلِيلًا مَّا تَذَكَّرُونَ", cue: "بعد الشاعر، تدخل قاعة يجلس فيها كاهن على اليمين ويشبه على الناس. تدرك أن هذا القول ليس بحق.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=لا_كاهن" },
+            { id: 43, name: "كتاب السماء", emoji: "👑📜", ayah: "تَنزِيلٌ مِّن رَّبِّ الْعَالَمِينَ", cue: "تغادر قاعة الكهنة وتواصل سيرك في الطريق فيزل أمامك كتاب من السماء تشعر بأن هذا القول العظيم هو 'تنزيل من رب العالمين'، يملأ المكان بالقدسية.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=تنزيل" },
+            { id: 44, name: "محكمة الإفتراء", emoji: "🤥🏛️", ayah: "وَلَوْ تَقَوَّلَ عَلَيْنَا بَعْضَ الْأَقَاوِيلِ", cue: "بعد نزول الكتاب تجد محمكة عظيمة وتسمع أصواتًا تتخيل لو أن الرسول صلى الله عليه وسلم 'تقول علينا بعض الأقاويل' من تلقاء نفسه.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=افتراء" },
+            { id: 45, name: "غرفة القوة", emoji: "✊", ayah: "لَأَخَذْنَا مِنْهُ بِالْيَمِينِ", cue: "من محكمة الافتراء، تجد غرفة على يمينك تؤخذ فيها الأشياء بالقوة والبطش. تتخيل لو أن الله أخذ من المفتري باليمين، وهي كناية عن الأخذ بقوة وشدة.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=أخذ_يمين" },
+            { id: 46, name: "غرفة العمليات", emoji: "🔪", ayah: "ثُمَّ لَقَطَعْنَا مِنْهُ الْوَتِينَ", cue: "وفي مقابل غرفة القوة على اليسار تجد غرفة عملياء وتتخيل قطع الوتين، وهو عرق متصل بالقلب، كناية عن الإهلاك التام. 'ثم لقطعنا منه الوتين'.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=وتين" },
+            { id: 47, name: "الحائل الزجاجي", emoji: "🚫🛡️", ayah: "فَمَا مِنكُم مِّنْ أَحَدٍ عَنْهُ حَاجِزِينَ", cue: "في غرفة العمليات هناك أناس ينظرون من النافذة ويريدون أن يحمون المريض فلا يستطعون الدخول ولا يوجد ما يحجز عقاب الله عن الظالمين، 'فما منكم من أحد عنه حاجزين'.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=حاجز" },
+            { id: 48, name: "محراب المتقين", emoji: "💡🎉", ayah: "وَإِنَّهُ لَتَذْكِرَةٌ لِّلْمُتَّقِينَ", cue: "تخرج من الحائل الزجاجي إلى الطريق فترى على يمينك محراب أنواره تشع بالحق، وتدرك أن هذا القرآن 'لتذكرة للمتقين' الذين يخشون ربهم.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=تذكرة" },
+            { id: 49, name: "حفرة المكذبين", emoji: "🤥🫤", ayah: "وَإِنَّا لَنَعْلَمُ أَنَّ مِنكُم مُّكَذِّبِينَ", cue: "بعد المحراب تجد على يسارك حفرة فيها أناس مكذبون. تدرك أن الله يعلمهم تمام العلم: 'وإنا لنعلم أن منكم مكذبين'.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=مكذبين" },
+            { id: 50, name: "سجن الكافرين", emoji: "🔥", ayah: "وَإِنَّهُ لَحَسْرَةٌ عَلَى الْكَافِرِينَ", cue: "بعد الحفرة تجد سجن على يمينك وتسمع أصوات الحسرة والألم من خلفه. تدرك أن هذا باب السجن يؤدي إلى العذاب، 'وإنه لحسرة على الكافرين'.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=حسرة" },
+            { id: 51, name: "منصة اليقين", emoji: "💯", ayah: "وَإِنَّهُ لَحَقُّ الْيَقِينِ", cue: "تكمل طريقك فتجد منصة بها كتاب يملؤه اليقين التام. تشعر بأن هذا الأمر 'لحق اليقين' الذي لا شك فيه.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=يقين" },
+            { id: 52, name: "بوابة التسبيح", emoji: "🤲", ayah: "فَسَبِّحْ بِاسْمِ رَبِّكَ الْعَظِيمِ", cue: "تصل إلى محطة النهاية في رحلتك. تجد نفسك أمام بوابة عظيمة، وتشعر بدعوة قوية للتسبيح: 'فسبح باسم ربك العظيم'. تختم رحلتك بالثناء على الله.", imageUrl: "https://placehold.co/100x100/A7F3D0/065F46?text=تسبيح" }
+        ];
+
+        let currentStationIndex = -1;
+        let progressChartInstance;
+
+        const stationsListDiv = document.getElementById('stationsList');
+        const modal = document.getElementById('stationModal');
+        const modalStationName = document.getElementById('modalStationName');
+        const modalStationImage = document.getElementById('modalStationImage'); // Get image element
+        const modalStationAyah = document.getElementById('modalStationAyah');
+        const modalStationCue = document.getElementById('modalStationCue');
+        const modalStationNumber = document.getElementById('modalStationNumber');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const prevStationButton = document.getElementById('prevStationButton');
+        const nextStationButton = document.getElementById('nextStationButton');
+        const progressSectionDiv = document.getElementById('progressSection'); // Get reference to progress section
+
+        // References to modal parts
+        const modalInnerContent = modal.querySelector('.bg-white'); // The inner white box of the modal
+        const modalScrollableArea = modal.querySelector('.modal-scrollable-content'); // The newly defined scrollable area
+        const modalNavButtonsDiv = modal.querySelector('.mt-auto.pt-4'); // The div containing nav buttons
+
+        // Store original parent and classes of progress section for later return
+        let originalProgressParent = progressSectionDiv.parentNode;
+        let originalProgressClasses = progressSectionDiv.className;
+
+        function renderStationsList() {
+            stationsListDiv.innerHTML = '';
+
+            stationsData.forEach((station, index) => {
+                const stationDiv = document.createElement('div');
+                stationDiv.className = 'station-item bg-white p-4 rounded-lg shadow-md cursor-pointer flex items-center space-x-3 space-x-reverse';
+
+                // Add thumn-highlight class if it's a thumn station
+                if (station.thumn) {
+                    stationDiv.classList.add('thumn-highlight');
+                }
+
+                stationDiv.innerHTML = `
+                    <span class="text-2xl">${station.emoji}</span>
+                    <span class="flex-grow text-emerald-700 font-semibold">${station.name}</span>
+                    <span class="text-sm text-stone-500">محطة ${station.id}</span>
+                `;
+                stationDiv.addEventListener('click', () => openStationModal(index));
+                stationsListDiv.appendChild(stationDiv);
+            });
+        }
+
+        function openStationModal(index) {
+            currentStationIndex = index;
+            const station = stationsData[index];
+            modalStationName.textContent = `${station.emoji} ${station.name}`;
+            modalStationAyah.textContent = station.ayah;
+            modalStationCue.textContent = station.cue;
+            modalStationNumber.textContent = `محطة ${station.id} من ${stationsData.length}`;
+
+            // Set image source and display
+            if (station.imageUrl) {
+                modalStationImage.src = station.imageUrl;
+                modalStationImage.style.display = 'block'; // Ensure it's visible
+            } else {
+                modalStationImage.style.display = 'none'; // Hide if no image
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('opacity-100');
+
+            // Move progress section into modal, ensuring it's always before navigation buttons
+            if (progressSectionDiv.parentNode !== modalInnerContent) {
+                originalProgressParent = progressSectionDiv.parentNode;
+                originalProgressClasses = progressSectionDiv.className;
+            }
+
+            // Remove original margin classes and add spacing for within modal
+            progressSectionDiv.classList.remove('my-8');
+            progressSectionDiv.classList.add('mb-4', 'mt-4'); // Add top and bottom margin within modal
+
+            // Append progress section before the navigation buttons in the modal
+            modalInnerContent.insertBefore(progressSectionDiv, modalNavButtonsDiv);
+
+            prevStationButton.disabled = index === 0;
+            nextStationButton.disabled = index === stationsData.length - 1;
+
+            updateProgressChart(currentStationIndex);
+            // Ensure the specific scrollable content area is scrolled to top
+            modalScrollableArea.scrollTop = 0;
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('opacity-100');
+
+            // Move progress section back to its original parent
+            if (originalProgressParent && progressSectionDiv.parentNode === modalInnerContent) {
+                originalProgressParent.appendChild(progressSectionDiv);
+                // Restore original classes
+                progressSectionDiv.className = originalProgressClasses;
+            }
+        }
+
+        closeModalButton.addEventListener('click', closeModal);
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        prevStationButton.addEventListener('click', () => {
+            if (currentStationIndex > 0) {
+                openStationModal(currentStationIndex - 1);
+            }
+        });
+
+        nextStationButton.addEventListener('click', () => {
+            if (currentStationIndex < stationsData.length - 1) {
+                openStationModal(currentStationIndex + 1);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (!modal.classList.contains('hidden')) {
+                if (event.key === 'Escape') {
+                    closeModal();
+                } else if (event.key === 'ArrowRight' && !nextStationButton.disabled) { // ArrowRight for RTL next
+                    nextStationButton.click();
+                } else if (event.key === 'ArrowLeft' && !prevStationButton.disabled) { // ArrowLeft for RTL previous
+                    prevStationButton.click();
+                }
+            }
+        });
+
+        function initProgressChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            Chart.defaults.font.family = "'Noto Naskh Arabic', serif";
+            progressChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['التقدم في الرحلة'],
+                    datasets: [{
+                        label: 'المحطات التي تم عرضها',
+                        data: [0],
+                        backgroundColor: ['rgba(16, 185, 129, 0.7)'],
+                        borderColor: ['rgb(16, 185, 129)'],
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        barThickness: 30,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: stationsData.length,
+                            ticks: {
+                                stepSize: 5,
+                                color: '#57534e',
+                                font: { size: 10 }
+                            },
+                            grid: { display: false }
+                        },
+                        y: {
+                            display: false,
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            rtl: true,
+                            callbacks: {
+                                label: function (context) {
+                                    return ` المحطات: ${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateProgressChart(currentIndex) {
+            if (progressChartInstance) {
+                progressChartInstance.data.datasets[0].data[0] = currentIndex + 1;
+                progressChartInstance.update();
+            }
+        }
+
+        renderStationsList();
+        initProgressChart();
+    </script>
+</body>
+
+</html>
